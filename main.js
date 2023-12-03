@@ -88,6 +88,7 @@ async function enableWebcam() {
   initiateCallBtn.disabled = false;
   answerCallBtn.disabled = false;
   startWebcamBtn.disabled = true;
+  startWebcamBtn.textContent = "Webcam Enabled";
 
   setInterval(getPeerConnectionStats, 5);
 }
