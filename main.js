@@ -88,7 +88,6 @@ async function enableWebcam() {
   initiateCallBtn.disabled = false;
   answerCallBtn.disabled = false;
   startWebcamBtn.disabled = true;
-  callIdField.hidden = false;
 
   setInterval(getPeerConnectionStats, 5);
 }
@@ -160,10 +159,21 @@ async function createCallOffer() {
   });
 
   sendMessageBtn.disabled = false;
+  answerCallBtn.disabled = true;
+  answerCallBtn.hidden = true;
+  callIdField.disabled = true;
+  initiateCallBtn.textContent = "Here is your Call ID:";
+  initiateCallBtn.disabled = true;
 }
 
 // Function to Answer Call by ID
 async function answerCallById() {
+  if (answerCallBtn.textContent === "Join Existing Call") {
+    answerCallBtn.textContent = "Enter Call ID:";
+    callIdField.disabled = false;
+    initiateCallBtn.hidden = true;
+    return;
+  }
   const callId = callIdField.value;
   const callDocument = dbService.collection('calls').doc(callId);
 
@@ -206,6 +216,8 @@ async function answerCallById() {
   });
   
   sendMessageBtn.disabled = false;
+  answerCallBtn.disabled = true;
+  callIdField.disabled = true;
 }
 
 // Event Listeners
