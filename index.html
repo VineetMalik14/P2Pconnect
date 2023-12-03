@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- <link rel="icon" type="image/svg+xml" href="favicon.svg"> -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P2P Video Chat</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="main-container">
+  <header>
+    <h1>P2P Video Chat</h1>
+  </header>
+
+  <div class="video-section">
+    <div class="video-wrapper local">
+      <video id="localVideo" autoplay playsinline></video>
+    </div>
+    <div class="video-wrapper remote">
+      <video id="remoteVideo" autoplay playsinline></video>
+    </div>
+  </div>
+
+  <button id="startWebcam">Activate Webcam To Start</button>
+
+  <section class="call-section">
+    <button id="initiateCall" disabled>Create A Call</button> OR <button id="answerCall" disabled>Join Existing Call</button> <br>
+    <br>
+    <input id="callId" placeholder="Enter Call ID" hidden>
+  </section>
+
+  <section class="chat-section">
+    <h2>Chat Window</h2>
+    <div id="chatWindow">
+      <div id="chatMessages"></div>
+      <input id="chatMessage" type="text" placeholder="Message">
+      <button id="sendMessage" disabled>Send Message</button>
+    </div>
+  </section>
+</div>
+
+<section id="connectionStats">
+  <h2>Connection Statistics</h2>
+  <p id="frameRate">Frame Rate: -</p>
+  <p id="jitter">Jitter: -</p>
+</section>
+
+<footer>
+  <p>© 2023 | Project on GitHub</p>
+</footer>
+
+<script type="module" src="/main.js"></script>
+
+</body>
+</html>

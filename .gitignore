@@ -1,0 +1,26 @@
+# Environment variables
+.env
+
+# Dependencies
+/node_modules
+
+# Editor directories and files
+.vscode
+
+# Firebase cache and local environment files
+.firebase
+.firebaserc
+
+# Build output directory
+/dist
+/build
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
