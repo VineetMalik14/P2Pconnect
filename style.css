@@ -148,3 +148,38 @@ footer p {
     max-width: 100%;
   }
 }
+
+/* Responsive Design for Smaller Screens */
+@media (max-width: 768px) {
+  .main-container {
+    width: 95%;
+  }
+
+  .video-section {
+    flex-direction: column-reverse; /* Swap the order of videos */
+  }
+
+  .video-wrapper.local {
+    position: static;
+    width: 30%; /* Make local video smaller */
+    height: auto;
+    margin: 10px auto; /* Center the local video */
+    box-shadow: 0 0 4px rgba(0,0,0,0.1); /* Optional: softer shadow */
+    transform: scaleX(1); /* Flip back the local video */
+  }
+
+  .video-wrapper.remote {
+    width: 100%; /* Use full width for remote video */
+    max-width: none; /* Remove max-width restriction */
+    z-index: 1;
+    margin-bottom: 20px;
+    transform: scaleX(1); /* Flip back the remote video */
+  }
+
+  video {
+    width: 100%;
+    height: auto;
+  }
+
+  /* Additional styling for buttons and inputs can remain unchanged */
+}
