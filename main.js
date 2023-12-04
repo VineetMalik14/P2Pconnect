@@ -170,8 +170,9 @@ async function createCallOffer() {
 // Function to Answer Call by ID
 async function answerCallById() {
   if (answerCallBtn.textContent === "Join Existing Call") {
-    answerCallBtn.textContent = "Enter Call ID:";
+    answerCallBtn.textContent = "Join with Call ID:";
     callIdField.disabled = false;
+    callIdField.placeholder = "Enter Call ID";
     initiateCallBtn.hidden = true;
     return;
   }
