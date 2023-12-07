@@ -59,6 +59,7 @@ let dataChannel = null;
 let bytesPrev = 0;
 let timestampPrev = Date.now();
 let resolution = '-';
+let bytesSentPrev = 0;
 
 // Functions
 async function getPeerConnectionStats() {
@@ -69,12 +70,18 @@ async function getPeerConnectionStats() {
   let bytes = 0;
   let timestamp = 0;
 
+  let bytesSent = 0;
+
   statsReport.forEach(report => {
     if (report.type === 'inbound-rtp' && report.kind === 'video') {
       frameRateValue = report.framesPerSecond;
       jitterValue = report.jitter;
       resolution = `${report.frameWidth}x${report.frameHeight}`;
       bytes = report.bytesReceived;
+    }
+
+    if (report.type === 'outbound-rtp' && report.kind === 'video') {
+      bytesSent = report.bytesSent;
     }
   });
 
@@ -84,6 +91,10 @@ async function getPeerConnectionStats() {
   timestamp = Date.now();
   let bitrate = 8 * (bytes - bytesPrev) / (timestamp - timestampPrev);
   bytesPrev = bytes;
+
+  adjustBitrateOnBytesSent(bytesSent - bytesSentPrev);
+  bytesSentPrev = bytesSent;
+
   timestampPrev = timestamp;
 
   document.getElementById('bitrate').innerText = `Bitrate: ${bitrate.toFixed(2)}`;
@@ -106,6 +117,48 @@ async function getPeerConnectionStats() {
   updateCharts();
 }
 
+const INITIAL_BITRATE = 200000; // 200 kbps
+const MAX_BITRATE = 2500000; // 2.5 Mbps
+const MIN_BITRATE = 100000; // 100 kbps
+const THRESHOLD = 10000; // 10 KB
+const INCREMENT = 100000; // 50 kbps
+// const SEVERE_DECREMENT = 300000; // 300 kbps
+
+let lastBytesSent = 0;
+let currentBitrate = INITIAL_BITRATE; 
+const maxBitrate = MAX_BITRATE;
+const minBitrate = MIN_BITRATE;
+
+function adjustBitrateOnBytesSent(bytesSent) {
+  const bytesDifference = bytesSent - lastBytesSent;
+  const threshold = THRESHOLD; // Set a threshold for significant change
+
+  if (bytesDifference > threshold) {
+    // Increase bitrate
+    currentBitrate = Math.min(currentBitrate + INCREMENT, maxBitrate);
+  } else if (-bytesDifference > threshold) {
+    // Severe penalty on decrease
+    currentBitrate = Math.max(currentBitrate/2, minBitrate);
+  }
+
+  // Update the bitrate in WebRTC
+  updateWebRTCBitrate(currentBitrate);
+
+  lastBytesSent = bytesSent;
+}
+
+function updateWebRTCBitrate(newBitrate) {
+  const sender = peerConn.getSenders().find(s => s.track.kind === 'video');
+  if (sender) {
+    const params = sender.getParameters();
+    if (!params.encodings) {
+      params.encodings = [{}];
+    }
+    params.encodings[0].maxBitrate = newBitrate;
+    sender.setParameters(params);
+  }
+}
+
 function initializeCharts() {
   // Frame Rate - Line Chart
   const ctxFrameRate = document.getElementById('frameRateChart').getContext('2d');
@@ -120,7 +173,7 @@ function initializeCharts() {
         borderWidth: 2
       }]
     },
-    // ... options ...
+    
   });
 
   // Bitrate - Bar Chart
@@ -137,7 +190,7 @@ function initializeCharts() {
         borderWidth: 1
       }]
     },
-    // ... options ...
+    
   });
 
   // Jitter - Radar Chart
@@ -155,8 +208,7 @@ function initializeCharts() {
       }]
     },
     options: {
-      // Radar chart specific options
-      // e.g., scale: { ... }
+      
     }
   });
 }
