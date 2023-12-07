@@ -44,23 +44,135 @@ const remoteVideoElement = document.getElementById('remoteVideo');
 const chatMessageField = document.getElementById('chatMessage');
 const sendMessageBtn = document.getElementById('sendMessage');
 
+// Initialize Chart Variables
+let chart;
+let frameRateChart, bitrateChart, jitterChart;
+let frameRates = [];
+let bitrates = [];
+let jitters = [];
+let timestamps = [];
+const MAX_DATA_POINTS = 15; // Number of data points to show on chart
+
+
 let dataChannel = null;
+
+let bytesPrev = 0;
+let timestampPrev = Date.now();
+let resolution = '-';
 
 // Functions
 async function getPeerConnectionStats() {
   const statsReport = await peerConn.getStats();
-  let frameRateValue = '-';
-  let jitterValue = '-';
+  let frameRateValue = 0;
+  let jitterValue = 0;
+
+  let bytes = 0;
+  let timestamp = 0;
 
   statsReport.forEach(report => {
     if (report.type === 'inbound-rtp' && report.kind === 'video') {
       frameRateValue = report.framesPerSecond;
       jitterValue = report.jitter;
+      resolution = `${report.frameWidth}x${report.frameHeight}`;
+      bytes = report.bytesReceived;
     }
   });
 
   document.getElementById('frameRate').innerText = `Frame Rate: ${frameRateValue}`;
   document.getElementById('jitter').innerText = `Jitter: ${jitterValue}`;
+
+  timestamp = Date.now();
+  let bitrate = 8 * (bytes - bytesPrev) / (timestamp - timestampPrev);
+  bytesPrev = bytes;
+  timestampPrev = timestamp;
+
+  document.getElementById('bitrate').innerText = `Bitrate: ${bitrate.toFixed(2)}`;
+  document.getElementById('resolution').innerText = `Resolution: ${resolution}`;
+
+  // Add data to arrays
+  frameRates.push(frameRateValue);
+  bitrates.push(bitrate.toFixed(2));
+  jitters.push(jitterValue);
+  timestamps.push(new Date(timestamp).toLocaleTimeString());
+
+  // Keep only the last N data points
+  if (timestamps.length > MAX_DATA_POINTS) {
+    frameRates.shift();
+    bitrates.shift();
+    jitters.shift();
+    timestamps.shift();
+  }
+
+  updateCharts();
+}
+
+function initializeCharts() {
+  // Frame Rate - Line Chart
+  const ctxFrameRate = document.getElementById('frameRateChart').getContext('2d');
+  frameRateChart = new Chart(ctxFrameRate, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Frame Rate',
+        data: [],
+        borderColor: 'blue',
+        borderWidth: 2
+      }]
+    },
+    // ... options ...
+  });
+
+  // Bitrate - Bar Chart
+  const ctxBitrate = document.getElementById('bitrateChart').getContext('2d');
+  bitrateChart = new Chart(ctxBitrate, {
+    type: 'bar',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Bitrate',
+        data: [],
+        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+        borderColor: 'rgba(255, 99, 132, 1)',
+        borderWidth: 1
+      }]
+    },
+    // ... options ...
+  });
+
+  // Jitter - Radar Chart
+  const ctxJitter = document.getElementById('jitterChart').getContext('2d');
+  jitterChart = new Chart(ctxJitter, {
+    type: 'radar',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Jitter',
+        data: [],
+        borderColor: 'green',
+        backgroundColor: 'rgba(0, 255, 0, 0.2)',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      // Radar chart specific options
+      // e.g., scale: { ... }
+    }
+  });
+}
+
+function updateCharts() {
+  updateChart(frameRateChart, frameRates);
+  updateChart(bitrateChart, bitrates);
+  updateChart(jitterChart, jitters);
+}
+
+function updateChart(chart, data) {
+  if (chart) {
+    chart.data.labels = timestamps;
+    chart.data.datasets[0].data = data;
+    chart.update();
+  }
 }
 
 // Function to Enable Webcam
@@ -90,7 +202,8 @@ async function enableWebcam() {
   startWebcamBtn.disabled = true;
   startWebcamBtn.textContent = "Webcam Enabled";
 
-  setInterval(getPeerConnectionStats, 5);
+  setInterval(getPeerConnectionStats, 2000);
+
 }
 
 // Function to Send Chat Message
@@ -165,6 +278,9 @@ async function createCallOffer() {
   callIdField.disabled = true;
   initiateCallBtn.textContent = "Here is your Call ID:";
   initiateCallBtn.disabled = true;
+  chatMessageField.disabled = false;
+
+  initializeCharts();
 }
 
 // Function to Answer Call by ID
@@ -220,6 +336,9 @@ async function answerCallById() {
   sendMessageBtn.disabled = false;
   answerCallBtn.disabled = true;
   callIdField.disabled = true;
+  chatMessageField.disabled = false;
+
+  initializeCharts();
 }
 
 // Event Listeners

@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>P2P Connect</title>
   <link rel="stylesheet" href="/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Add this line for Chart.js -->
 </head>
 <body>
 
@@ -36,7 +37,7 @@
     <h2>Chat Window</h2>
     <div id="chatWindow">
       <div id="chatMessages"></div>
-      <input id="chatMessage" type="text" placeholder="Message">
+      <input id="chatMessage" type="text" placeholder="Message" disabled>
       <button id="sendMessage" disabled>Send Message</button>
     </div>
   </section>
@@ -44,8 +45,29 @@
 
 <section id="connectionStats">
   <h2>Connection Statistics</h2>
+  <p id="resolution">Resolution: -</p>
   <p id="frameRate">Frame Rate: -</p>
   <p id="jitter">Jitter: -</p>
+  <p id="bitrate">Bitrate: -</p>
+
+  <!-- Add Canvas for Chart -->
+  <!-- <div style="width:75%;">
+    <canvas id="metricsChart"></canvas>
+  </div> -->
+  <div>
+    <h3>Frame Rate</h3>
+    <canvas id="frameRateChart"></canvas>
+  </div>
+
+  <div>
+    <h3>Bitrate</h3>
+    <canvas id="bitrateChart"></canvas>
+  </div>
+
+  <div>
+    <h3>Jitter</h3>
+    <canvas id="jitterChart"></canvas>
+  </div>
 </section>
 
 <footer>

@@ -127,6 +127,28 @@ footer p {
   margin: 0;
 }
 
+/* Style for Chart Container */
+#connectionStats {
+  background: #fff; /* White background for clarity */
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+  border-radius: 4px; /* Optional: rounded corners */
+}
+
+#frameRateChart, #bitrateChart, #jitterChart {
+  max-width: 100%; /* Adjust the width as needed */
+  height: 250px; /* Adjust the height for a better aspect ratio */
+  margin: auto; /* Center the chart in the container */
+}
+
+/* Responsive Design for Smaller Screens */
+@media (max-width: 768px) {
+  #frameRateChart, #bitrateChart, #jitterChart {
+    height: 200px; /* Slightly smaller height on smaller screens */
+  }
+}
+
 /* Responsive Design for Smaller Screens */
 @media (max-width: 768px) {
   .main-container {
@@ -165,7 +187,7 @@ footer p {
     height: auto;
     margin: 10px auto; /* Center the local video */
     box-shadow: 0 0 4px rgba(0,0,0,0.1); /* Optional: softer shadow */
-    transform: scaleX(1); /* Flip back the local video */
+    transform: scaleX(-1); /* Flip back the local video */
   }
 
   .video-wrapper.remote {
@@ -173,7 +195,7 @@ footer p {
     max-width: none; /* Remove max-width restriction */
     z-index: 1;
     margin-bottom: 20px;
-    transform: scaleX(1); /* Flip back the remote video */
+    transform: scaleX(-1); /* Flip back the remote video */
   }
 
   video {
