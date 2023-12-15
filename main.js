@@ -61,6 +61,14 @@ let timestampPrev = Date.now();
 let resolution = '-';
 let bytesSentPrev = 0;
 
+let totalFrameRates = 0;
+let totalBitrates = 0;
+let totalJitters = 0;
+let totalFrameRatesVariance = 0;
+let totalBitratesVariance = 0;
+let totalJittersVariance = 0;
+let numberOfDataPoints = 0;
+
 // Functions
 async function getPeerConnectionStats() {
   const statsReport = await peerConn.getStats();
@@ -115,13 +123,33 @@ async function getPeerConnectionStats() {
   }
 
   updateCharts();
+
+  // Calculate average frame rate and bitrate
+  numberOfDataPoints++;
+  totalFrameRates += frameRateValue;
+  totalBitrates += bitrate;
+  totalJitters += jitterValue;
+  let averageFrameRate = totalFrameRates/numberOfDataPoints;
+  totalFrameRatesVariance +=  Math.pow(frameRateValue - averageFrameRate, 2);
+  let averageBitrate = totalBitrates/numberOfDataPoints;
+  totalBitratesVariance +=  Math.pow(bitrate - averageBitrate, 2);
+  let averageJitter = totalJitters/numberOfDataPoints;
+  totalJittersVariance +=  Math.pow(jitterValue - averageJitter, 2);
+
+  console.log(`Average Frame Rate: ${averageFrameRate}`);
+  console.log(`Average Bitrate: ${averageBitrate}`);
+  console.log(`Average Jitter: ${averageJitter}`);
+  console.log(`Frame Rate Variance: ${totalFrameRatesVariance/numberOfDataPoints}`);
+  console.log(`Bitrate Variance: ${totalBitratesVariance/numberOfDataPoints}`);
+  console.log(`Jitter Variance: ${totalJittersVariance/numberOfDataPoints}`);
+  
 }
 
 const INITIAL_BITRATE = 200000; // 200 kbps
 const MAX_BITRATE = 2500000; // 2.5 Mbps
-const MIN_BITRATE = 100000; // 100 kbps
+const MIN_BITRATE = 200000; // 200 kbps
 const THRESHOLD = 10000; // 10 KB
-const INCREMENT = 100000; // 50 kbps
+const INCREMENT = 100000; // 100 kbps
 // const SEVERE_DECREMENT = 300000; // 300 kbps
 
 let lastBytesSent = 0;
@@ -136,15 +164,18 @@ function adjustBitrateOnBytesSent(bytesSent) {
   if (bytesDifference > threshold) {
     // Increase bitrate
     currentBitrate = Math.min(currentBitrate + INCREMENT, maxBitrate);
+    lastBytesSent = bytesSent;
   } else if (-bytesDifference > threshold) {
     // Severe penalty on decrease
     currentBitrate = Math.max(currentBitrate/2, minBitrate);
+    lastBytesSent = 0;
+  } else {
+    lastBytesSent = bytesSent;
   }
 
   // Update the bitrate in WebRTC
   updateWebRTCBitrate(currentBitrate);
 
-  lastBytesSent = bytesSent;
 }
 
 function updateWebRTCBitrate(newBitrate) {
